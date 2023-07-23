@@ -1,0 +1,4 @@
+// The program input for aleo_store_nft_standard/src/main.leo
+[main]
+public a: u32 = 1u32;
+b: u32 = 2u32;

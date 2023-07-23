@@ -1,0 +1,10 @@
+{
+    "program": "aleo_store_nft_standard.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "development": {
+        "private_key": "APrivateKey1zkpGbX6WpQtZ4dMmeCmSnFK9uuEzQhXv1xXnWiQFTqsumYN",
+        "address": "aleo1ungcf8w8rh96pll877xxafn9xv8tya2zdw29ns6nrq944mqm3qzslhfkjg"
+    },
+    "license": "MIT"
+}
