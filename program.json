@@ -1,7 +1,7 @@
 {
     "program": "aleo_store.aleo",
     "version": "0.0.1",
-    "description": "",
+    "description": "Aleo.store NFT standard and marketplace program.",
     "development": {
         "private_key": "APrivateKey1zkpGbX6WpQtZ4dMmeCmSnFK9uuEzQhXv1xXnWiQFTqsumYN",
         "address": "aleo1ungcf8w8rh96pll877xxafn9xv8tya2zdw29ns6nrq944mqm3qzslhfkjg"
