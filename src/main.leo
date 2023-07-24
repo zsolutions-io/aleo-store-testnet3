@@ -1,6 +1,6 @@
 import credits.leo;
 
-program aleo_store_nft_standard.aleo {
+program aleo_store.aleo {
     record Token {
         owner: address,
         id: TokenId,
@@ -14,6 +14,7 @@ program aleo_store_nft_standard.aleo {
 
     struct TokenData {
         metadata_uri: String64,
+        transferable: bool
     }
 
     record Collection {
@@ -126,13 +127,10 @@ program aleo_store_nft_standard.aleo {
  
     transition create_collection(
         private collection_number: u128, 
-        private collection_public_data: CollectionPublicData,
-        private updatable: bool
-    ) -> Collection {
+        private collection_data: CollectionData,
+        public collection_public_data: CollectionPublicData,
+    ) -> private Collection {
         assert_neq(collection_number, 0u128);
-        let collection_data: CollectionData = CollectionData {
-            updatable: updatable
-        };
         let collection_id: CollectionId = CollectionId {
             collection_number: collection_number
         };
@@ -160,8 +158,8 @@ program aleo_store_nft_standard.aleo {
     }
     transition update_collection_public_data(
         private collection: Collection,
-        private collection_public_data: CollectionPublicData
-    ) -> Collection {
+        public collection_public_data: CollectionPublicData
+    ) -> private Collection {
         let out_collection: Collection = Collection {
             owner: collection.owner,
             id: collection.id,
@@ -173,8 +171,8 @@ program aleo_store_nft_standard.aleo {
         );
     }
     finalize update_collection_public_data(
-        collection_id: CollectionId, 
-        collection_public_data: CollectionPublicData
+        public collection_id: CollectionId, 
+        public collection_public_data: CollectionPublicData
     ){
         let former_collection_public_data: CollectionPublicData 
             = collectionPublicData.get(
@@ -224,8 +222,8 @@ program aleo_store_nft_standard.aleo {
         private collection: Collection, 
         public token_number: u128,
         private receiver: address,
-        private metadata_uri: String64
-    ) -> (Token, Collection) {
+        private token_data: TokenData
+    ) -> private (Token, Collection) {
         let new_collection: Collection = Collection {
             owner: collection.owner,
             id: collection.id,
@@ -236,13 +234,10 @@ program aleo_store_nft_standard.aleo {
             token_number: token_number
         };
 
-        let data: TokenData = TokenData {
-            metadata_uri: metadata_uri
-        };
         let token : Token = Token {
             owner: receiver,
             id: token_id,
-            data: data
+            data: token_data
         };
         return (token, new_collection) then finalize(token_id);
     }
@@ -258,7 +253,7 @@ program aleo_store_nft_standard.aleo {
     transition burn_private(
         private collection: Collection,
         private token: Token
-    ) -> Collection {
+    ) -> private Collection {
         assert_eq(token.id.collection_number, collection.id.collection_number);
         assert(collection.data.updatable);
 
@@ -284,8 +279,8 @@ program aleo_store_nft_standard.aleo {
 
     transition burn_public (
         private collection: Collection,
-        token_id: TokenId
-    ) -> Collection {
+        public token_id: TokenId
+    ) -> private Collection {
         assert_eq(token_id.collection_number, collection.id.collection_number);
         assert(collection.data.updatable);
 
@@ -301,8 +296,8 @@ program aleo_store_nft_standard.aleo {
         );
     }
     finalize burn_public (
-        collection_id: CollectionId,
-        token_id: TokenId
+        public collection_id: CollectionId,
+        public token_id: TokenId
     ) {
         let is_listed: bool = listings.contains(token_id);
         let public_data_exists: bool = publicTokenData.contains(token_id);
@@ -321,7 +316,7 @@ program aleo_store_nft_standard.aleo {
         private token: Token,
         private receiver: address
     ) -> private Token {
-
+        assert(token.data.transferable)
         let out_token: Token = Token {
             owner: receiver,
             id: token.id,
@@ -332,8 +327,8 @@ program aleo_store_nft_standard.aleo {
     }
 
     transition transfer_token_public(
-        private token_id: TokenId,
-        private receiver: address
+        public token_id: TokenId,
+        public receiver: address
     ) {
         return then finalize(
             token_id,
@@ -347,14 +342,21 @@ program aleo_store_nft_standard.aleo {
         public caller: address
     ) {
         let token_owner: address = publicTokenOwners.get(token_id);
+        let token_data: TokenData = publicTokenData.get(token_id);
         assert_eq(token_owner, caller);
+        assert(token_data.transferable);
         publicTokenOwners.set(token_id, receiver);
     }
 
     transition transfer_t_private_to_public(
-        public token: Token, 
+        private token: Token, 
         public receiver: address
-    ) -> Token {
+    ) {
+        assert(
+            token.data.transferable.or(
+                self.caller.eq(receiver)
+            )
+        );
         return then finalize(
             token.data,
             token.id,
@@ -364,7 +366,7 @@ program aleo_store_nft_standard.aleo {
     finalize transfer_t_private_to_public(
         public token_data: TokenData, 
         public token_id: TokenId,
-        public receiver: address
+        public receiver: address,
     ) {
         let collection_id: CollectionId = CollectionId {
             collection_number: token_id.collection_number
@@ -376,11 +378,16 @@ program aleo_store_nft_standard.aleo {
         publicTokenOwners.set(token_id, receiver);
     }
 
-        transition transfer_t_public_to_private(
+    transition transfer_t_public_to_private(
         public token_id: TokenId,
         public token_data: TokenData,
         public receiver: address
-    ) -> Token {
+    ) -> private Token {
+        assert(
+            token_data.transferable.or(
+                self.caller.eq(receiver)
+            )
+        );
         let out_token: Token = Token {
             owner: receiver,
             id: token_id,
@@ -407,11 +414,11 @@ program aleo_store_nft_standard.aleo {
         publicTokenData.remove(token_id);
     }
 
-    transition update_metadata_private(
+    transition update_token_data_private(
         private collection: Collection,
         private token: Token,
-        private metadata_uri: String64
-    ) -> (Token, Collection) {
+        private token_data: TokenData
+    ) -> private (Token, Collection) {
         assert_eq(token.id.collection_number, collection.id.collection_number);
         assert(collection.data.updatable);
 
@@ -419,9 +426,6 @@ program aleo_store_nft_standard.aleo {
             owner: collection.owner,
             id: collection.id,
             data: collection.data
-        };
-        let token_data: TokenData = TokenData {
-            metadata_uri: metadata_uri
         };
         let out_token: Token = Token {
             owner: token.owner,
@@ -431,11 +435,11 @@ program aleo_store_nft_standard.aleo {
         return (out_token, out_collection);
     }
 
-    transition update_metadata_public(
+    transition update_token_data_public(
         private collection: Collection,
-        private token_id: TokenId,
-        private metadata_uri: String64
-    ) -> Collection {
+        public token_id: TokenId,
+        public token_data: TokenData
+    ) -> private Collection {
         assert_eq(token_id.collection_number, collection.id.collection_number);
         assert(collection.data.updatable);
 
@@ -446,26 +450,22 @@ program aleo_store_nft_standard.aleo {
         };
         return out_collection then finalize(
             token_id,
-            metadata_uri
+            token_data
         );
     }
-    finalize update_metadata_public(
+    finalize update_token_data_public(
         public token_id: TokenId,
-        public metadata_uri: String64
+        public token_data: TokenData
     ) {
-        let token_data: TokenData = publicTokenData.get(token_id);
-        let out_token_data: TokenData = TokenData {
-            metadata_uri: metadata_uri
-        };
-        publicTokenData.set(token_id, out_token_data);
+        publicTokenData.set(token_id, token_data);
     }
 
     
-    transition create_collection_mint(
+    transition set_collection_mint(
         private collection: Collection,
-        private mint_number: u128,
-        private mint_data: MintData,
-    ) -> Collection {
+        public mint_number: u128,
+        public mint_data: MintData,
+    ) -> private Collection {
         let out_collection: Collection = Collection {
             owner: collection.owner,
             id: collection.id,
@@ -482,9 +482,9 @@ program aleo_store_nft_standard.aleo {
             mint_data
         );
     }
-    finalize create_collection_mint(
-        collection_mint_id: CollectionMintId,
-        mint_data: MintData
+    finalize set_collection_mint(
+        public collection_mint_id: CollectionMintId,
+        public mint_data: MintData
     ) {
         // Check collection publicizable
         let collection_id: CollectionId = CollectionId {
@@ -498,41 +498,14 @@ program aleo_store_nft_standard.aleo {
         let collection_mint_exists: bool = collectionMintData.contains(
             collection_mint_id
         );
-        assert(collection_mint_exists.not());
+        if(collection_mint_exists){
+            let former_mint_data: MintData = collectionMintData.get(
+                collection_mint_id
+            );
+            assert_eq(former_mint_data.random, mint_data.random);
+            collectionMintData.set(collection_mint_id, mint_data);
+        }
         collectionMintData.set(collection_mint_id, mint_data);
-    }
-
-
-    transition update_collection_mint(
-        private collection: Collection,
-        private mint_number: u128,
-        private mint_data: MintData
-    ) -> Collection {
-        let out_collection: Collection = Collection {
-            owner: collection.owner,
-            id: collection.id,
-            data: collection.data
-        };
-
-        let collection_mint_id: CollectionMintId = CollectionMintId {
-            collection_number: collection.id.collection_number,
-            mint_number: mint_number
-        };
-
-        return out_collection then finalize (
-            collection_mint_id,
-            mint_data
-        );
-    }
-    finalize update_collection_mint(
-        public collection_mint_id: CollectionMintId,
-        public new_mint_data: MintData
-    ) {
-        let collection_mint_data: MintData = collectionMintData.get(
-            collection_mint_id
-        );
-        assert_eq(collection_mint_data.random, new_mint_data.random);
-        collectionMintData.set(collection_mint_id, new_mint_data);
     }
 
 
@@ -540,8 +513,8 @@ program aleo_store_nft_standard.aleo {
         private collection: Collection,
         public token_number: u128,
         public mint_number: u128,
-        public metadata_uri: String64
-    ) -> Collection {
+        public token_data: TokenData
+    ) -> private Collection {
         let token_mint_id: TokenMintId = TokenMintId {
             collection_number: collection.id.collection_number,
             token_number: token_number,
@@ -555,12 +528,12 @@ program aleo_store_nft_standard.aleo {
 
         return out_collection then finalize(
             token_mint_id,
-            metadata_uri
+            token_data
         );
     }
     finalize set_token_mint(
         public token_mint_id: TokenMintId,
-        public metadata_uri: String64,
+        public token_data: TokenData,
     ) {
         // Check mint random
         let collection_mint_id: CollectionMintId = CollectionMintId {
@@ -586,9 +559,6 @@ program aleo_store_nft_standard.aleo {
             );
         }
 
-        let token_data: TokenData = TokenData {
-            metadata_uri: metadata_uri
-        };
         tokenMintData.set(token_mint_id, token_data);
     }
 
@@ -597,7 +567,7 @@ program aleo_store_nft_standard.aleo {
         public token_number: u128,
         public mint_number: u128,
         public random_index: u64,
-    ) -> Collection {
+    ) -> private Collection {
         let token_mint_id: TokenMintId = TokenMintId {
             collection_number: collection.id.collection_number,
             token_number: token_number,
@@ -671,7 +641,7 @@ program aleo_store_nft_standard.aleo {
         public mint_number: u128,
         public addr: address,
         public quantity: u64
-    ) -> Collection {
+    ) -> private Collection {
         let out_collection: Collection = Collection {
             owner: collection.owner,
             id: collection.id,
@@ -706,7 +676,7 @@ program aleo_store_nft_standard.aleo {
         public payment: credits.leo/credits,
         public treasury: address,
         public price: u64,
-    ) -> (credits.leo/credits, credits.leo/credits) {
+    ) -> private (credits.leo/credits, credits.leo/credits) {
         let (out_seller, out_buyer): (credits, credits) 
             = credits.leo/transfer_private(
                 payment,
@@ -838,8 +808,8 @@ program aleo_store_nft_standard.aleo {
     transition prove_collection_ownership (
         private collection: Collection,
         private to: address,
-        private height: u32,
-    ) -> (CollectionOwnerProof, Collection) {
+        public height: u32,
+    ) -> private (CollectionOwnerProof, Collection) {
         let collection_owner_proof: CollectionOwnerProof 
             = CollectionOwnerProof {
                 owner: to,
@@ -866,8 +836,8 @@ program aleo_store_nft_standard.aleo {
     transition prove_private_token_ownership (
         private token: Token,
         private to: address,
-        private height: u32
-    ) -> (TokenOwnerProof, Token) {
+        public height: u32
+    ) -> private (TokenOwnerProof, Token) {
         let token_owner_proof: TokenOwnerProof = TokenOwnerProof {
             owner: to,
             prover: self.caller,
@@ -894,8 +864,8 @@ program aleo_store_nft_standard.aleo {
     transition prove_private_token_holdership (
         private token: Token,
         private to: address,
-        private height: u32,
-    ) -> (CollectionHolderProof, Token) {
+        public height: u32,
+    ) -> private (CollectionHolderProof, Token) {
         let collection_id: CollectionId = CollectionId {
             collection_number: token.id.collection_number
         };
@@ -927,21 +897,22 @@ program aleo_store_nft_standard.aleo {
         public name: u128,
         private receiver: address,
         private metadata_uri: String64
-    ) -> Token {
+    ) -> private Token {
         let token_id: TokenId = TokenId {
             collection_number: 0u128,
             token_number: name
         };
 
         let data: TokenData = TokenData {
-            metadata_uri: metadata_uri
+            metadata_uri: metadata_uri,
+            transferable: true
         };
-        let token : Token = Token {
+        let alias : Token = Token {
             owner: receiver,
             id: token_id,
             data: data
         };
-        return token then finalize(token_id);
+        return alias then finalize(token_id);
     }
     finalize mint_alias(
         public token_id: TokenId,
@@ -951,8 +922,47 @@ program aleo_store_nft_standard.aleo {
 
         tokenExists.set(token_id, true);
     }
+    
+    transition update_alias_metadata_private(
+        private alias: Token,
+        private metadata_uri: String64
+    ) -> private Token {
+        let data: TokenData = TokenData {
+            metadata_uri: metadata_uri,
+            transferable: true
+        };
+        let out_alias : Token = Token {
+            owner: alias.owner,
+            id: alias.id,
+            data: data
+        };
+        return out_alias;
+    }
 
-    transition create_alias_collection() -> Collection {
+    transition update_alias_metadata_public(
+        public token_id: TokenId,
+        public metadata_uri: String64
+    ) {
+        return then finalize(token_id, metadata_uri, self.caller);
+    }
+    finalize update_alias_metadata_public(
+        token_id: TokenId,
+        metadata_uri: String64,
+        caller: address,
+    ) {
+        let owner: address = publicTokenOwners.get(token_id);
+        assert_eq(owner, caller);
+
+        publicTokenData.set(
+            token_id,
+            TokenData {
+                metadata_uri: metadata_uri,
+                transferable: true
+            }
+        );
+    }
+
+    transition create_alias_collection() -> private Collection {
         let collection_data: CollectionData = CollectionData {
             updatable: false
         };
@@ -978,19 +988,23 @@ program aleo_store_nft_standard.aleo {
 
     // Marketplace transitions (should be externalised)
 
-    transition create_listing(
+    transition create_listing_public(
         public token_id: TokenId,
         public price: u64
     ) {
         return then finalize(self.caller, token_id, price);
     }
-    finalize create_listing (
+    finalize create_listing_public (
         public seller: address,
         public token_id: TokenId,
         public price: u64
     ) {
         let token_owner: address = publicTokenOwners.get(token_id);
         assert_eq(token_owner, seller);
+
+        let token_data: TokenData = publicTokenData.get(token_id);
+        assert(token_data.transferable);
+
         let listing: Listing = Listing {
             seller: seller,
             price: price
@@ -1036,12 +1050,12 @@ program aleo_store_nft_standard.aleo {
 
     transition accept_listing(
         public listing: Listing,
-        public payment: credits.leo/credits,
+        private payment: credits.leo/credits,
         public royalty_fees: u64,
         public royalty_address: address,
         public token_id: TokenId,
         public token_data: TokenData
-    ) -> (
+    ) -> private (
         Token, 
         credits.leo/credits, 
         credits.leo/credits, 
@@ -1153,4 +1167,3 @@ program aleo_store_nft_standard.aleo {
         return 50u32;
     }
 }
-
