@@ -223,7 +223,7 @@ program aleo_store.aleo {
         public token_number: u128,
         private receiver: address,
         private token_data: TokenData
-    ) -> private (Token, Collection) {
+    ) -> (private Token, private Collection) {
         let new_collection: Collection = Collection {
             owner: collection.owner,
             id: collection.id,
@@ -316,7 +316,7 @@ program aleo_store.aleo {
         private token: Token,
         private receiver: address
     ) -> private Token {
-        assert(token.data.transferable)
+        assert(token.data.transferable);
         let out_token: Token = Token {
             owner: receiver,
             id: token.id,
@@ -418,7 +418,7 @@ program aleo_store.aleo {
         private collection: Collection,
         private token: Token,
         private token_data: TokenData
-    ) -> private (Token, Collection) {
+    ) -> (private Token, private Collection) {
         assert_eq(token.id.collection_number, collection.id.collection_number);
         assert(collection.data.updatable);
 
@@ -676,7 +676,7 @@ program aleo_store.aleo {
         public payment: credits.leo/credits,
         public treasury: address,
         public price: u64,
-    ) -> private (credits.leo/credits, credits.leo/credits) {
+    ) -> (credits.leo/credits, credits.leo/credits) {
         let (out_seller, out_buyer): (credits, credits) 
             = credits.leo/transfer_private(
                 payment,
@@ -766,14 +766,13 @@ program aleo_store.aleo {
         let token_exists: bool = tokenExists.contains(token_id);
         assert(token_exists.not());
 
+        // Check whitelist
         let address_collection_mint_id: AddressCollectionMintId 
             = AddressCollectionMintId {
                 addr: caller,
                 collection_number: collection_mint_id.collection_number,
                 mint_number: collection_mint_id.mint_number
             };
-
-        // Check whitelist
         if(mint_data.whitelist) {
             let address_collection_whitelist: u64
                 = mintWhitelists.get_or_use(
@@ -809,7 +808,7 @@ program aleo_store.aleo {
         private collection: Collection,
         private to: address,
         public height: u32,
-    ) -> private (CollectionOwnerProof, Collection) {
+    ) -> (private CollectionOwnerProof, private Collection) {
         let collection_owner_proof: CollectionOwnerProof 
             = CollectionOwnerProof {
                 owner: to,
@@ -837,7 +836,7 @@ program aleo_store.aleo {
         private token: Token,
         private to: address,
         public height: u32
-    ) -> private (TokenOwnerProof, Token) {
+    ) -> (private TokenOwnerProof, private Token) {
         let token_owner_proof: TokenOwnerProof = TokenOwnerProof {
             owner: to,
             prover: self.caller,
@@ -865,7 +864,7 @@ program aleo_store.aleo {
         private token: Token,
         private to: address,
         public height: u32,
-    ) -> private (CollectionHolderProof, Token) {
+    ) -> (private CollectionHolderProof, private Token) {
         let collection_id: CollectionId = CollectionId {
             collection_number: token.id.collection_number
         };
@@ -1055,8 +1054,8 @@ program aleo_store.aleo {
         public royalty_address: address,
         public token_id: TokenId,
         public token_data: TokenData
-    ) -> private (
-        Token, 
+    ) -> (
+        private Token, 
         credits.leo/credits, 
         credits.leo/credits, 
         credits.leo/credits, 
