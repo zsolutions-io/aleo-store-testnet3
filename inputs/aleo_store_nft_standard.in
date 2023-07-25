@@ -464,6 +464,28 @@ to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 height: u32 = 1u32;
 
 
+[prove_private_token_holdership]
+token: Token = Token {
+    id: TokenId {
+        token_number: 1u128,
+        collection_number: 1u128
+    },
+    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+    data: TokenData {
+        metadata_uri: String64 {
+            part0: 0u128,
+            part1: 0u128,
+            part2: 0u128,
+            part3: 0u128,
+        },
+        transferable: true,
+    }
+};
+to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
+height: u32 = 1u32;
+
+
+
 [update_whitelist]
 collection: Collection = Collection {
     id: CollectionId {
