@@ -6,6 +6,8 @@ collection_data: CollectionData = CollectionData {
     updatable: true
 };
 collection_public_data: CollectionPublicData = CollectionPublicData{
+    royalty_fees: 0u64,
+    royalty_address: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     metadata_uri: String64 {
         part0: 0u128,
         part1: 0u128,
@@ -18,8 +20,6 @@ collection_public_data: CollectionPublicData = CollectionPublicData{
         part2: 0u128,
         part3: 0u128,
     },
-    royalty_fees: 0u64,
-    royalty_address: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     publicizable: true
 };
 
@@ -40,6 +40,8 @@ collection: Collection = Collection {
     }
 };
 collection_public_data: CollectionPublicData = CollectionPublicData{
+    royalty_fees: 0u64,
+    royalty_address: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     metadata_uri: String64 {
         part0: 0u128,
         part1: 0u128,
@@ -52,8 +54,7 @@ collection_public_data: CollectionPublicData = CollectionPublicData{
         part2: 0u128,
         part3: 0u128,
     },
-    royalty_fees: 0u64,
-    royalty_address: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+    publicizable: true
 };
 
 
@@ -137,8 +138,8 @@ collection: Collection = Collection {
 };
 token: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -169,16 +170,16 @@ collection: Collection = Collection {
     }
 };
 token: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 
 
 [transfer_token_private]
 token: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -188,7 +189,7 @@ token: Token = Token {
             part2: 0u128,
             part3: 0u128,
         },
-        publicizable: true,
+        transferable: true,
     }
 };
 receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
@@ -196,8 +197,8 @@ receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lj
 
 [transfer_token_public]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 
@@ -205,8 +206,8 @@ receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lj
 [transfer_t_private_to_public]
 token: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -216,7 +217,7 @@ token: Token = Token {
             part2: 0u128,
             part3: 0u128,
         },
-        publicizable: true,
+        transferable: true,
     }
 };
 receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
@@ -224,8 +225,8 @@ receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lj
 
 [transfer_t_public_to_private]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 token_data: TokenData = TokenData {
     metadata_uri: String64 {
@@ -234,7 +235,7 @@ token_data: TokenData = TokenData {
         part2: 0u128,
         part3: 0u128,
     },
-    publicizable: true,
+    transferable: true,
 };
 receiver: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 
@@ -256,8 +257,8 @@ collection: Collection = Collection {
 };
 token: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -267,7 +268,7 @@ token: Token = Token {
             part2: 0u128,
             part3: 0u128,
         },
-        publicizable: true,
+        transferable: true,
     }
 };
 token_data: TokenData = TokenData {
@@ -277,7 +278,7 @@ token_data: TokenData = TokenData {
         part2: 0u128,
         part3: 0u128,
     },
-    publicizable: true,
+    transferable: true,
 };
 
 [update_token_data_public]
@@ -296,8 +297,8 @@ collection: Collection = Collection {
     }
 };
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 token_data: TokenData = TokenData {
     metadata_uri: String64 {
@@ -306,7 +307,7 @@ token_data: TokenData = TokenData {
         part2: 0u128,
         part3: 0u128,
     },
-    publicizable: true,
+    transferable: true,
 };
 
 
@@ -360,7 +361,7 @@ token_data: TokenData = TokenData {
         part2: 0u128,
         part3: 0u128,
     },
-    publicizable: true,
+    transferable: true,
 };
 
 
@@ -441,32 +442,12 @@ to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 height: u32 = 1u32;
 
 
-[prove_private_token_holdership]
-token: Token = Token {
-    id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
-    },
-    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-    data: TokenData {
-        metadata_uri: String64 {
-            part0: 0u128,
-            part1: 0u128,
-            part2: 0u128,
-            part3: 0u128,
-        },
-        publicizable: true,
-    }
-};
-to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
-height: u32 = 1u32;
-
 
 [prove_private_token_ownership]
 token: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -476,7 +457,7 @@ token: Token = Token {
             part2: 0u128,
             part3: 0u128,
         },
-        publicizable: true,
+        transferable: true,
     }
 };
 to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
@@ -505,30 +486,30 @@ quantity: u64 = 1u64;
 
 [create_listing_public]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 price: u64 = 1u64;
 
 
 [update_listing]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 price: u64 = 1u64;
 
 
 [cancel_listing]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 
 
 [accept_listing]
 listing: Listing = Listing {
-    creator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+    seller: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     price: 1u64,
 };
 payment: credits = credits {
@@ -538,8 +519,8 @@ payment: credits = credits {
 royalty_fees: u64 = 1u64;
 royalty_address: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 token_data: TokenData = TokenData {
     metadata_uri: String64 {
@@ -548,7 +529,7 @@ token_data: TokenData = TokenData {
         part2: 0u128,
         part3: 0u128,
     },
-    publicizable: true
+    transferable: true
 };
 
 
@@ -566,8 +547,8 @@ metadata_uri: String64 = String64 {
 [update_alias_metadata_private]
 alias: Token = Token {
     id: TokenId {
-        collection_number: 1u128,
-        token_number: 1u128
+        token_number: 1u128,
+        collection_number: 1u128
     },
     owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
     data: TokenData {
@@ -577,7 +558,7 @@ alias: Token = Token {
             part2: 0u128,
             part3: 0u128,
         },
-        publicizable: true,
+        transferable: true,
     }
 };
 metadata_uri: String64 = String64 {
@@ -590,8 +571,8 @@ metadata_uri: String64 = String64 {
 
 [update_alias_metadata_public]
 token_id: TokenId = TokenId {
-    collection_number: 1u128,
-    token_number: 1u128
+    token_number: 1u128,
+    collection_number: 1u128
 };
 metadata_uri: String64 = String64 {
     part0: 0u128,
@@ -599,8 +580,3 @@ metadata_uri: String64 = String64 {
     part2: 0u128,
     part3: 0u128,
 };
-
-
-// Listing only transferable
-// 
-// Add list public
