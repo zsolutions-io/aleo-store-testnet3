@@ -1,5 +1,5 @@
 {
-    "program": "aleo_store.aleo",
+    "program": "aleo_store_2.aleo",
     "version": "0.0.1",
     "description": "Aleo.store NFT standard and marketplace program.",
     "development": {
