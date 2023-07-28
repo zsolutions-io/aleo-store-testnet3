@@ -1,6 +1,9 @@
+// Leo code for Aleo.store NFT standard and Marketplace
+// Documentation is available at https://docs.aleo.store
+
 import credits.leo;
 
-program aleo_store.aleo {
+program aleo_store_2.aleo {
     record Token {
         owner: address,
         id: TokenId,
@@ -66,7 +69,7 @@ program aleo_store.aleo {
     }
 
     struct IndexCollectionMintId {
-        index: u64,
+        index: u128,
         collection_number: u128,
         mint_number: u128
     }
@@ -118,9 +121,9 @@ program aleo_store.aleo {
     // Public mint mappings
     mapping mintWhitelists: AddressCollectionMintId => u64;
     mapping collectionMintData: CollectionMintId => MintData;
-    mapping tokenMintData: TokenMintId => TokenData;
-    mapping randomMintTokenNumbers: IndexCollectionMintId => u128;
-    mapping randomMintLengths: CollectionMintId => u64;
+    mapping tokenMintData: IndexCollectionMintId => TokenData;
+    mapping mintTokenNumbers: IndexCollectionMintId => u128;
+    mapping mintLengths: CollectionMintId => u128;
 
     // Marketplace mappings
     mapping listings: TokenId => Listing;
@@ -305,11 +308,8 @@ program aleo_store.aleo {
 
         tokenExists.remove(token_id);
         publicTokenData.remove(token_id);
-        if(is_listed){
-            listings.remove(token_id);
-        } else {
-            publicTokenOwners.remove(token_id);
-        }
+        listings.remove(token_id);
+        publicTokenOwners.remove(token_id);
     }
 
     transition transfer_token_private(
@@ -494,17 +494,6 @@ program aleo_store.aleo {
             = collectionPublicData.get(collection_id);
         assert(public_collection_data.publicizable);
 
-        // Check collection mint not exists
-        let collection_mint_exists: bool = collectionMintData.contains(
-            collection_mint_id
-        );
-        if(collection_mint_exists){
-            let former_mint_data: MintData = collectionMintData.get(
-                collection_mint_id
-            );
-            assert_eq(former_mint_data.random, mint_data.random);
-            collectionMintData.set(collection_mint_id, mint_data);
-        }
         collectionMintData.set(collection_mint_id, mint_data);
     }
 
@@ -542,36 +531,33 @@ program aleo_store.aleo {
         };
         let mint_data: MintData = collectionMintData.get(collection_mint_id);
 
-        if(mint_data.random){
-            let random_mint_length: u64 = randomMintLengths.get_or_use(
-                collection_mint_id, 0u64
-            );
-            randomMintLengths.set(
-                collection_mint_id, random_mint_length + 1u64
-            );
-            let index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
-                collection_number: collection_mint_id.collection_number,
-                mint_number: collection_mint_id.mint_number,
-                index: random_mint_length
-            };
-            randomMintTokenNumbers.set(
-                index_mint_id, token_mint_id.token_number
-            );
-        }
+        let mint_length: u128 = mintLengths.get_or_use(
+            collection_mint_id, 0u128
+        );
+        mintLengths.set(
+            collection_mint_id, mint_length + 1u128
+        );
+        let index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
+            collection_number: collection_mint_id.collection_number,
+            mint_number: collection_mint_id.mint_number,
+            index: mint_length
+        };
+        mintTokenNumbers.set(
+            index_mint_id, token_mint_id.token_number
+        );
 
-        tokenMintData.set(token_mint_id, token_data);
+        tokenMintData.set(index_mint_id, token_data);
     }
 
     transition remove_token_mint(
         private collection: Collection,
-        public token_number: u128,
         public mint_number: u128,
-        public random_index: u64,
+        public mint_index: u128
     ) -> private Collection {
-        let token_mint_id: TokenMintId = TokenMintId {
+        let index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
             collection_number: collection.id.collection_number,
-            token_number: token_number,
-            mint_number: mint_number
+            mint_number: mint_number,
+            index: mint_index
         };
         let out_collection: Collection = Collection{
             owner: collection.owner,
@@ -580,60 +566,54 @@ program aleo_store.aleo {
         };
 
         return out_collection then finalize(
-            token_mint_id,
-            random_index
+            index_mint_id
         );
     }
     finalize remove_token_mint(
-        public token_mint_id: TokenMintId,
-        public random_index: u64
+        public index_mint_id: IndexCollectionMintId
     ) {
         // Get mint data
         let collection_mint_id: CollectionMintId = CollectionMintId {
-            collection_number: token_mint_id.collection_number,
-            mint_number: token_mint_id.mint_number
+            collection_number: index_mint_id.collection_number,
+            mint_number: index_mint_id.mint_number
         };
         let mint_data: MintData = collectionMintData.get(collection_mint_id);
 
-        if(mint_data.random){
-            // Update random mint list length
-            let random_mint_length: u64 = randomMintLengths.get(
-                collection_mint_id
-            );
-            let new_random_mint_length: u64 = random_mint_length - 1u64;
-            randomMintLengths.set(collection_mint_id, new_random_mint_length);
+        // Update random mint list length
+        let mint_length: u128 = mintLengths.get(
+            collection_mint_id
+        );
+        let new_mint_length: u128 = mint_length - 1u128;
+        mintLengths.set(collection_mint_id, new_mint_length);
 
-            // Remove element from random mint list
-            let index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
+        // Remove element from random mint list
+        let token_number: u128 = mintTokenNumbers.get(
+            index_mint_id
+        );
+        mintTokenNumbers.remove(index_mint_id);
+
+        // Get last element token id
+        let last_former_index_mint_id: IndexCollectionMintId 
+            = IndexCollectionMintId {
                 collection_number: collection_mint_id.collection_number,
                 mint_number: collection_mint_id.mint_number,
-                index: random_index
+                index: new_mint_length
             };
-            randomMintTokenNumbers.remove(index_mint_id);
+        let last_token_number: u128 = mintTokenNumbers.get(
+            last_former_index_mint_id
+        );
 
-            // Get last element token id
-            let last_former_index_mint_id: IndexCollectionMintId 
-                = IndexCollectionMintId {
-                    collection_number: collection_mint_id.collection_number,
-                    mint_number: collection_mint_id.mint_number,
-                    index: new_random_mint_length
-                };
-            let last_token_number: u128 = randomMintTokenNumbers.get(
-                last_former_index_mint_id
-            );
-
-            // Replace removed element with last element
-            let last_new_index_mint_id: IndexCollectionMintId 
-                = IndexCollectionMintId {
-                    collection_number: collection_mint_id.collection_number,
-                    mint_number: collection_mint_id.mint_number,
-                    index: new_random_mint_length
-                };
-            randomMintTokenNumbers.set(
-                last_new_index_mint_id, last_token_number
-            );
-        }
-        tokenMintData.remove(token_mint_id);
+        // Replace removed element with last element
+        let last_new_index_mint_id: IndexCollectionMintId 
+            = IndexCollectionMintId {
+                collection_number: collection_mint_id.collection_number,
+                mint_number: collection_mint_id.mint_number,
+                index: new_mint_length
+            };
+        mintTokenNumbers.set(
+            last_new_index_mint_id, last_token_number
+        );
+        tokenMintData.remove(index_mint_id);
     }
 
     transition update_whitelist(
@@ -670,9 +650,9 @@ program aleo_store.aleo {
         );
     }
 
-
     transition mint_public(
-        public token_mint_id: TokenMintId,
+        public index_mint_id: IndexCollectionMintId,
+        public token_number: u128, // For non random mint check that intended token will be minted
         public payment: credits.leo/credits,
         public treasury: address,
         public price: u64,
@@ -684,120 +664,124 @@ program aleo_store.aleo {
                 price
             );
         return (out_buyer, out_seller) then finalize(
-            token_mint_id,
+            index_mint_id,
+            token_number,
             treasury,
             price,
-            self.caller,
+            self.caller
         );
     } finalize mint_public (
-        public token_mint_id: TokenMintId,
+        public index_mint_id: IndexCollectionMintId,
+        public input_token_number: u128,
         public treasury: address,
         public price: u64,
         public caller: address,
     ) {
         let collection_mint_id: CollectionMintId = CollectionMintId {
-            collection_number: token_mint_id.collection_number,
-            mint_number: token_mint_id.mint_number
+            collection_number: index_mint_id.collection_number,
+            mint_number: index_mint_id.mint_number
         };
         let mint_data: MintData = collectionMintData.get(collection_mint_id);
+        
+        let mint_length: u128 = mintLengths.get(
+            collection_mint_id
+        );
+        let new_mint_length: u128 = mint_length - 1u128;
+
+        // Select random element from random mint list
+        let random_index: u128 = ChaCha::rand_u128() % mint_length;
+
+        let index: u128 = mint_data.random ? (
+            ChaCha::rand_u128() % mint_length
+        ) : (
+            index_mint_id.index
+        );
+        
+        let out_index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
+            collection_number: collection_mint_id.collection_number,
+            mint_number: collection_mint_id.mint_number,
+            index: index
+        };
+        let token_number: u128 = mintTokenNumbers.get(
+            out_index_mint_id
+        );
+        assert(
+            mint_data.random.or(
+                token_number.eq(
+                    input_token_number
+                )
+            )
+        );
         let token_id: TokenId = TokenId {
-            collection_number: token_mint_id.collection_number,
-            token_number: token_mint_id.token_number
+            collection_number: collection_mint_id.collection_number,
+            token_number: token_number
         };
-        let out_token_mint_id: TokenMintId = TokenMintId {
-            collection_number: token_mint_id.collection_number,
-            token_number: token_mint_id.token_number,
-            mint_number: token_mint_id.mint_number
-        };
-        if(mint_data.random){
-            // Update random mint list length
-            let random_mint_length: u64 = randomMintLengths.get(
-                collection_mint_id
-            );
-            let new_random_mint_length: u64 = random_mint_length - 1u64;
-            randomMintLengths.set(collection_mint_id, new_random_mint_length);
 
-            // Select random element from random mint list
-            let random_index: u64 = ChaCha::rand_u64() % random_mint_length;
-
-            let index_mint_id: IndexCollectionMintId = IndexCollectionMintId {
+        let last_former_index_mint_id: IndexCollectionMintId 
+            = IndexCollectionMintId {
                 collection_number: collection_mint_id.collection_number,
                 mint_number: collection_mint_id.mint_number,
-                index: random_index
+                index: index
             };
-            let token_number: u128 = randomMintTokenNumbers.get(index_mint_id);
-            token_id = TokenId {
-                collection_number: token_id.collection_number,
-                token_number: token_number
+        let last_token_number: u128 = mintTokenNumbers.get(
+            last_former_index_mint_id
+        );
+
+        let last_new_index_mint_id: IndexCollectionMintId 
+            = IndexCollectionMintId {
+                collection_number: collection_mint_id.collection_number,
+                mint_number: collection_mint_id.mint_number,
+                index: new_mint_length
             };
-            out_token_mint_id = TokenMintId {
-                collection_number: token_id.collection_number,
-                token_number: token_id.token_number,
-                mint_number: token_mint_id.mint_number
-            };
 
-            // Remove element from random mint list
-            randomMintTokenNumbers.remove(index_mint_id);
-
-            // Get last element token id
-            let last_former_index_mint_id: IndexCollectionMintId 
-                = IndexCollectionMintId {
-                    collection_number: collection_mint_id.collection_number,
-                    mint_number: collection_mint_id.mint_number,
-                    index: new_random_mint_length
-                };
-            let last_token_number: u128 = randomMintTokenNumbers.get(
-                last_former_index_mint_id
-            );
-
-            // Replace removed element with last element
-            let last_new_index_mint_id: IndexCollectionMintId 
-                = IndexCollectionMintId {
-                    collection_number: collection_mint_id.collection_number,
-                    mint_number: collection_mint_id.mint_number,
-                    index: new_random_mint_length
-                };
-            randomMintTokenNumbers.set(
-                last_new_index_mint_id, last_token_number
-            );
-        }
-
-        // Check token exists already
         let token_exists: bool = tokenExists.contains(token_id);
         assert(token_exists.not());
 
-        // Check whitelist
         let address_collection_mint_id: AddressCollectionMintId 
             = AddressCollectionMintId {
                 addr: caller,
                 collection_number: collection_mint_id.collection_number,
                 mint_number: collection_mint_id.mint_number
             };
-        if(mint_data.whitelist) {
-            let address_collection_whitelist: u64
-                = mintWhitelists.get_or_use(
-                    address_collection_mint_id, 0u64
-                );
-            mintWhitelists.set(
-                address_collection_mint_id, 
-                address_collection_whitelist - 1u64
+        let stored_address_collection_whitelist: u64
+            = mintWhitelists.get_or_use(
+                address_collection_mint_id, 0u64
             );
-        }
+
+        let address_collection_whitelist: u64 = mint_data.whitelist ? 
+            stored_address_collection_whitelist : 1u64;
+
+        let new_address_collection_whitelist: u64 = (
+            address_collection_whitelist - 1u64
+        );
+        
+        mintWhitelists.set(
+            address_collection_mint_id, new_address_collection_whitelist
+        );
 
         // Check mint block heights
-        if(mint_data.start != 0u32) {
-            assert(mint_data.start <= block.height);
-        }
-        if(mint_data.end != 0u32) {
-            assert(block.height < mint_data.end);
-        }
+        assert(
+            mint_data.start.eq(0u32).or(
+                mint_data.start <= block.height
+            )
+        );
+        assert(
+            mint_data.end.eq(0u32).or(
+                block.height < mint_data.end
+            )
+        );
 
         // Check mint payment
         assert_eq(price, mint_data.price);
         assert_eq(treasury, mint_data.treasury);
 
+        let token_data: TokenData = tokenMintData.get(out_index_mint_id);
+
         // Set public token
-        let token_data: TokenData = tokenMintData.get(out_token_mint_id);
+        mintTokenNumbers.set(last_new_index_mint_id, last_token_number);
+        mintTokenNumbers.remove(out_index_mint_id);
+        mintTokenNumbers.remove(last_former_index_mint_id);
+        mintLengths.set(collection_mint_id, new_mint_length);
         tokenExists.set(token_id, true);
         publicTokenOwners.set(token_id, caller);
         publicTokenData.set(token_id, token_data);
