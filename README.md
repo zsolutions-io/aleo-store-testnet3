@@ -4,7 +4,7 @@ Standard proposition for NFTs on Aleo. Documentation for the standard can be fou
 
 __Official marketplace frontend:__ [Aleo.store](https://aleo.store)
 
-__Program ID:__ `aleo_store.aleo`
+__Program ID:__ `aleo_store_2.aleo`
 
 ## Build Guide
 
