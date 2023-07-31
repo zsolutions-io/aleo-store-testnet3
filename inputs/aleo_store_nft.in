@@ -1,4 +1,3 @@
-// The program input for arc721_0_1_0_45rq0plgax/src/main.leo
 
 [create_collection]
 collection_number: u128 = 1u128;
@@ -337,7 +336,7 @@ mint_data: MintData = MintData {
 };
 
 
-[set_token_mint]
+[create_token_mint]
 collection: Collection = Collection {
     id: CollectionId {
         collection_number: 1u128
@@ -364,8 +363,7 @@ token_data: TokenData = TokenData {
     transferable: true,
 };
 
-
-[init_token_random_public]
+[update_token_mint]
 collection: Collection = Collection {
     id: CollectionId {
         collection_number: 1u128
@@ -381,26 +379,17 @@ collection: Collection = Collection {
     }
 };
 token_number: u128 = 1u128;
-metadata_uri: String64 = String64 {
-    part0: 0u128,
-    part1: 0u128,
-    part2: 0u128,
-    part3: 0u128,
+mint_number: u128 = 1u128;
+index: u128 = 1u128;
+token_data: TokenData = TokenData {
+    metadata_uri: String64 {
+        part0: 0u128,
+        part1: 0u128,
+        part2: 0u128,
+        part3: 0u128,
+    },
+    transferable: true,
 };
-
-
-[mint_public]
-token_id:TokenMintId = TokenMintId {
-    collection_number: 1u128,
-    token_number: 1u128,
-    mint_number: 1u128
-};
-payment: credits = credits {
-    microcredits: 1u64,
-    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
-};
-treasury: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
-price: u64 = 1u64;
 
 
 [remove_token_mint]
@@ -420,7 +409,24 @@ collection: Collection = Collection {
 };
 token_number: u128 = 1u128;
 mint_number: u128 = 1u128;
-random_index: u64 = 0u64;
+index: u128 = 1u128;
+
+
+
+[mint_public]
+index_mint_id:IndexCollectionMintId = IndexCollectionMintId {
+    index: 1u128,
+    collection_number: 1u128,
+    mint_number: 1u128
+};
+token_number: u128 = 1u128;
+payment: credits = credits {
+    microcredits: 1u64,
+    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+};
+treasury: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
+price: u64 = 1u64;
+
 
 
 [prove_collection_ownership]
@@ -443,7 +449,7 @@ height: u32 = 1u32;
 
 
 
-[prove_private_token_ownership]
+[prove_token_ownership]
 token: Token = Token {
     id: TokenId {
         token_number: 1u128,
@@ -464,7 +470,7 @@ to: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 height: u32 = 1u32;
 
 
-[prove_private_token_holdership]
+[prove_collection_holdership]
 token: Token = Token {
     id: TokenId {
         token_number: 1u128,
@@ -506,7 +512,7 @@ addr: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 quantity: u64 = 1u64;
 
 
-[create_listing_public]
+[create_listing]
 token_id: TokenId = TokenId {
     token_number: 1u128,
     collection_number: 1u128
