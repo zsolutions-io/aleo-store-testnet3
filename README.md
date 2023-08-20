@@ -51,6 +51,8 @@ snarkos developer deploy \
 
 ### Lifecycle Overview
 
+![Aleo store token lifecycle](images/aleo_life_cycle.png?raw=true "Aleo store token lifecycle")
+
 ### Concepts
 
 #### Collection
