@@ -1,6 +1,7 @@
 # Aleo.store NFT Standard
 
 Marketplace and standard proposition for NFTs on Aleo. Detailed documentation for the program can be found [here](https://docs.aleo.store).
+
 [A demo video is also available.](https://www.youtube.com/watch?v=I-JNPbK0-Qk)
 
 __Official marketplace frontend:__ [Aleo.store](https://aleo.store)
