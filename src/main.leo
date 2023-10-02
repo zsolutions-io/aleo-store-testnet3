@@ -348,6 +348,29 @@ program aleo_store_nft.aleo {
         publicTokenOwners.set(token_id, receiver);
     }
 
+    transition transfer_t_program_to_public(
+        public token_id: TokenId,
+        public receiver: address
+    ) {
+        return then finalize(
+            token_id,
+            receiver,
+            self.parent
+        );
+    }
+    finalize transfer_t_program_to_public(
+        public token_id: TokenId,
+        public receiver: address,
+        public parent: address
+    ) {
+        let token_owner: address = publicTokenOwners.get(token_id);
+        let token_data: TokenData = publicTokenData.get(token_id);
+        assert_eq(token_owner, parent);
+        assert(token_data.transferable);
+        publicTokenOwners.set(token_id, receiver);
+    }
+
+
     transition transfer_t_private_to_public(
         private token: Token, 
         public receiver: address
@@ -408,6 +431,42 @@ program aleo_store_nft.aleo {
         let owner: address = publicTokenOwners.get(token_id);
 
         assert_eq(owner, caller);
+        assert_eq(token_data, stored_token_data);
+
+        publicTokenOwners.remove(token_id);
+        publicTokenData.remove(token_id);
+    }
+
+    transition transfer_t_program_to_private(
+        public token_id: TokenId,
+        public token_data: TokenData,
+        public receiver: address
+    ) -> private Token {
+        assert(
+            token_data.transferable.or(
+                self.caller.eq(receiver)
+            )
+        );
+        let out_token: Token = Token {
+            owner: receiver,
+            id: token_id,
+            data: token_data
+        };
+        return out_token then finalize(
+            token_id,
+            token_data,
+            self.parent
+        );
+    }
+    finalize transfer_t_program_to_private(
+        public token_id: TokenId,
+        public token_data: TokenData,
+        public parent: address
+    ) {
+        let stored_token_data: TokenData = publicTokenData.get(token_id);
+        let owner: address = publicTokenOwners.get(token_id);
+
+        assert_eq(owner, parent);
         assert_eq(token_data, stored_token_data);
 
         publicTokenOwners.remove(token_id);
