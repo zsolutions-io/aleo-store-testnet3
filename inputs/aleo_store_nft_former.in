@@ -135,16 +135,21 @@ collection: Collection = Collection {
         updatable: true
     }
 };
-token: NFT = NFT {
-    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-    edition: 85070591730234615865843651857942052865scalar,
-    data: String64 {
-        part0: 0u128,
-        part1: 0u128,
-        part2: 0u128,
-        part3: 0u128,
+token: Token = Token {
+    id: TokenId {
+        token_number: 1u128,
+        collection_number: 1u128
     },
-    transferable: true,
+    owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+    data: TokenData {
+        metadata_uri: String64 {
+            part0: 0u128,
+            part1: 0u128,
+            part2: 0u128,
+            part3: 0u128,
+        },
+        publicizable: true,
+    }
 };
 
 
