@@ -115,7 +115,7 @@ program aleo_store_nft.aleo {
     ) -> private Collection {
         assert_neq(collection_number, 0u128);
         let collection: Collection = Collection {
-            owner: self.caller,
+            owner: self.signer,
             data: collection_data,
             id: CollectionId {
                 collection_number: collection_number
@@ -314,7 +314,7 @@ program aleo_store_nft.aleo {
         return then finalize(
             token_id,
             receiver,
-            self.caller
+            self.signer
         );
     }
     finalize transfer_token_public(
@@ -341,7 +341,7 @@ program aleo_store_nft.aleo {
         return then finalize(
             token_id,
             receiver,
-            self.parent
+            self.caller
         );
     }
     finalize transfer_t_program_to_public(
@@ -364,7 +364,7 @@ program aleo_store_nft.aleo {
         private token: NFT, 
         public receiver: address
     ) {
-        assert(token.transferable || self.caller == receiver);
+        assert(token.transferable || self.signer == receiver);
         let token_data: TokenData = TokenData {
             metadata_uri: token.data,
             transferable: token.transferable
@@ -399,7 +399,7 @@ program aleo_store_nft.aleo {
         public token_data: TokenData,
         public receiver: address
     ) -> private NFT {
-        assert(token_data.transferable || self.caller == receiver);
+        assert(token_data.transferable || self.signer == receiver);
         let out_token: NFT = NFT {
             owner: receiver,
             data: token_data.metadata_uri,
@@ -409,7 +409,7 @@ program aleo_store_nft.aleo {
         return out_token then finalize(
             token_id,
             token_data,
-            self.caller
+            self.signer
         );
     }
     finalize transfer_t_public_to_private(
@@ -445,7 +445,7 @@ program aleo_store_nft.aleo {
         return out_token then finalize(
             token_id,
             token_data,
-            self.parent
+            self.caller
         );
     }
     finalize transfer_t_program_to_private(
@@ -756,7 +756,7 @@ program aleo_store_nft.aleo {
             token_number,
             treasury,
             price,
-            self.caller
+            self.signer
         );
     } finalize mint_public (
         public input_index_mint_id: IndexCollectionMintId,
@@ -913,7 +913,7 @@ program aleo_store_nft.aleo {
         public token_id: TokenId,
         public metadata_uri: String64
     ) {
-        return then finalize(token_id, metadata_uri, self.caller);
+        return then finalize(token_id, metadata_uri, self.signer);
     }
     finalize update_alias_metadata_public(
         token_id: TokenId,
@@ -960,7 +960,7 @@ program aleo_store_nft.aleo {
         public token_id: TokenId,
         public price: u64
     ) {
-        return then finalize(self.caller, token_id, price);
+        return then finalize(self.signer, token_id, price);
     }
     finalize create_listing (
         public seller: address,
@@ -988,7 +988,7 @@ program aleo_store_nft.aleo {
         public token_id: TokenId,
         public price: u64
     ) {
-        return then finalize(self.caller, token_id, price);
+        return then finalize(self.signer, token_id, price);
     }
     finalize update_listing (
         public seller: address,
@@ -1007,7 +1007,7 @@ program aleo_store_nft.aleo {
     transition cancel_listing(
         public token_id: TokenId
     ) {
-        return then finalize(self.caller, token_id);
+        return then finalize(self.signer, token_id);
     }
     finalize cancel_listing(
         public seller: address,
@@ -1031,14 +1031,14 @@ program aleo_store_nft.aleo {
         public token_id: TokenId,
         public token_data: TokenData
     ) -> (
-        private Token, 
+        private NFT, 
         credits.leo/credits, 
         credits.leo/credits, 
         credits.leo/credits, 
         credits.leo/credits
     ) {
         let token: NFT = NFT {
-            owner: self.caller,
+            owner: self.signer,
             data: token_data.metadata_uri,
             edition: token_id_to_edition(token_id),
             transferable: token_data.transferable
@@ -1117,7 +1117,7 @@ program aleo_store_nft.aleo {
             transferable: token.transferable
         };
         return then finalize(
-            self.caller,
+            self.signer,
             token_edition_to_hash(token.edition, token.data),
             token_data,
             token_edition_to_id(token.edition),
@@ -1148,8 +1148,8 @@ program aleo_store_nft.aleo {
         return then finalize(
             token_edition_to_hash(edition, data),
             receiver,
-            self.caller,
-            token_id,
+            self.signer,
+            token_edition_to_id(edition),
             data
         );
     }
