@@ -1,13 +1,6 @@
 // Leo code for Aleo.store NFT standard and Marketplace
 // Documentation is available at https://docs.aleo.store
 
-// Question Evan:
-// TokenId -> TokenData ?
-// Transferable boolean ?
-// Royalties ?
-
-// If collections have duplicates, then the editions should increment by one.
-
 import credits.leo;
 
 program aleo_store_nft.aleo {
